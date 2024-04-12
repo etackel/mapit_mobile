@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
 class TopBar extends StatelessWidget implements PreferredSizeWidget {
+  final GlobalKey<ScaffoldState> _scaffoldKey;
+
+  TopBar({required GlobalKey<ScaffoldState> scaffoldKey})
+      : _scaffoldKey = scaffoldKey;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -12,7 +17,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
           IconButton(
             icon: Icon(Icons.menu),
             onPressed: () {
-              Scaffold.of(context).openEndDrawer();
+              _scaffoldKey.currentState?.openDrawer();
             },
           ),
           Expanded(
@@ -21,7 +26,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
               color: Colors.white,
               child: Center(
                 child: Text(
-                  'Your App Title',
+                  'MapIT',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
@@ -43,6 +48,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => Size.fromHeight(48.0);
 }
+
 
 class SearchDelegateExample extends SearchDelegate<String> {
   @override

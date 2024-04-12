@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mapit/src/views/create_note/custom_widgets/location_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:mapit/src/models/note.dart';
 import 'package:mapit/src/provider/note_provider.dart';
+import '../../utils/save_note.dart';
 import '../add_location/add_location_view.dart';
 import 'custom_widgets/task_container.dart';
 import 'custom_widgets/topBar.dart';
@@ -30,14 +32,15 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
     descriptionController =
         TextEditingController(text: widget.note?.description);
     tasks =
-        widget.note?.taskList?.map((task) => Task(text: task.text)).toList() ??
-            [Task(text: '')];
+        widget.note?.taskList?.map((task) => Task(text: task.text, isCompleted: task.isCompleted)).toList() ??
+            [Task(text: '', isCompleted: false)];
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
+        print('onWillPop');
         _saveNote();
         return true;
       },
@@ -45,7 +48,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
         top: true,
         bottom: true,
         child: Scaffold(
-          appBar: TopBar(),
+          appBar: TopBar(titleController, descriptionController, tasks, widget.note),
           body: Stack(
             children: [
               ListView(
@@ -58,7 +61,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                           controller: titleController,
                           onChanged: (text) {},
                           onEditingComplete: _saveNote,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Title',
                             hintStyle: TextStyle(
                               color: Color(0xFF156FEE),
@@ -73,7 +76,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                               borderSide: BorderSide(color: Color(0xFF156FEE)),
                             ),
                           ),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Color(0xFF156FEE),
                             fontSize: 20,
                             fontFamily: 'Gilroy-SemiBold',
@@ -86,7 +89,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                           controller: descriptionController,
                           onChanged: (text) {},
                           onEditingComplete: _saveNote,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Description',
                             hintStyle: TextStyle(
                               color: Color(0xFF8F8F8F),
@@ -96,7 +99,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                             ),
                             border: InputBorder.none,
                           ),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Color(0xFF8F8F8F),
                             fontSize: 14,
                             fontFamily: 'Gilroy-Regular',
@@ -118,7 +121,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                           task: tasks[index],
                           onTextChanged: (text) {
                             setState(() {
-                              tasks[index] = Task(text: text);
+                              tasks[index] = Task(text: text, isCompleted: false);
                               // Auto-add an empty task when the user enters something
                               if (text.isNotEmpty &&
                                   index == tasks.length - 1) {
@@ -127,6 +130,9 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                               }
                             });
                           },
+                          titleController: titleController,
+                          descriptionController: descriptionController,
+                          tasks: tasks,
                         );
                       },
                     ),
@@ -162,27 +168,10 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
   }
 
   void _addNewTask() {
-    setState(() {
-      tasks.add(Task(text: ''));
-    });
+    NoteUtils.addNewTask(tasks, setState);
   }
 
   void _saveNote() {
-    final noteProvider = Provider.of<NoteProvider>(context, listen: false);
-
-    final newNote = Note(
-      noteId: widget.note?.noteId ?? DateTime.now().toString(),
-      title: titleController.text,
-      description: descriptionController.text,
-      taskList: tasks,
-    );
-
-    if (newNote.title!.isNotEmpty || newNote.description!.isNotEmpty) {
-      // Save the note along with its tasks
-      noteProvider.addNote(newNote);
-      print('Note saved: ${newNote.title}');
-    } else {
-      print('Note not saved: Title and description are empty');
-    }
+    NoteUtils.saveNote(context, titleController, descriptionController, tasks, widget.note);
   }
 }

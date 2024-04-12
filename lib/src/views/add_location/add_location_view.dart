@@ -89,33 +89,6 @@ class _MapScreenState extends State<MapScreen> {
               child: Icon(Icons.save),
             ),
           ),
-
-          Positioned(
-            bottom: 0.0,
-            left: 0.0,
-            right: 0.0,
-            height: 180.0,
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Priority:'),
-                  DropdownButton<TaskPriority>(
-                    value: _priority,
-                    items: TaskPriority.values.map((priority) {
-                      return DropdownMenuItem<TaskPriority>(
-                        value: priority,
-                        child: Text(priority.toString().split('.').last),
-                      );
-                    }).toList(),
-                    onChanged: (priority) => setState(() => _priority = priority!),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );

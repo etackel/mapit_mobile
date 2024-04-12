@@ -2,10 +2,10 @@
 
 class Task {
   final String text;
-  late final bool isCompleted;
+  bool? isCompleted;
 
   Task({
     required this.text,
-    this.isCompleted = false, // Default isCompleted to false
+    required this.isCompleted
   });
 }

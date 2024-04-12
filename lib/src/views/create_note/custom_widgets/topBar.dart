@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:mapit/src/utils/save_note.dart';
+import 'package:mapit/src/models/note.dart';
+import '../../../models/task.dart';
 
 class TopBar extends StatelessWidget implements PreferredSizeWidget {
+  final TextEditingController titleController;
+  final TextEditingController descriptionController;
+  final List<Task> tasks;
+  final Note? note;
+
+  TopBar(this.titleController, this.descriptionController, this.tasks, this.note);
   @override
   Size get preferredSize => Size.fromHeight(70.0);
 
@@ -17,6 +26,8 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
             icon: Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.pop(context);
+              NoteUtils.saveNote(context, titleController,
+                  descriptionController, tasks, note);
             },
           ),
           Expanded(
