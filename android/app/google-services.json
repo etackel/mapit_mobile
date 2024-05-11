@@ -1,26 +1,43 @@
 {
   "project_info": {
-    "project_number": "24985500781",
-    "project_id": "mapit-a4712",
-    "storage_bucket": "mapit-a4712.appspot.com"
+    "project_number": "455325735038",
+    "project_id": "mapit-etackel",
+    "storage_bucket": "mapit-etackel.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:24985500781:android:fa2431fdb5c9bc28c79364",
+        "mobilesdk_app_id": "1:455325735038:android:276c3a4b0109031d6be02f",
         "android_client_info": {
           "package_name": "com.etackel.mapit"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "455325735038-brmghmg1fr8lsrg5cafksa7hcnbegfbv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBsgxuhF5g6jb9bY1gtsp2c9dXxvkttEJ4"
+          "current_key": "AIzaSyBRUC8IGL_N_7ty5lJHu9ERxOvaJZ7AP0E"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "455325735038-brmghmg1fr8lsrg5cafksa7hcnbegfbv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "455325735038-qgfjdajdgd7re9ou0b673mi1ajkki9t1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.etackel.mapit"
+              }
+            }
+          ]
         }
       }
     }

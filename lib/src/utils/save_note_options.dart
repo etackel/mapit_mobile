@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 import 'package:mapit/src/models/note.dart';
 import 'package:mapit/src/provider/note_provider.dart';
 import '../models/task.dart';
 
 class NoteUtils {
-  static void saveNote(BuildContext context, TextEditingController titleController, TextEditingController descriptionController, List<Task> tasks, Note? note) {
+  static void saveNote(BuildContext context, TextEditingController titleController, TextEditingController descriptionController, List<Task> tasks, Note? note, String address, LocationData locationData) {
     print('calling save note');
     final noteProvider = Provider.of<NoteProvider>(context, listen: false);
 
-    // Create a new Note object with the updated title
+
     final newNote = Note(
       noteId: note?.noteId ?? DateTime.now().toString(),
       title: titleController.text,
       description: descriptionController.text,
       taskList: tasks,
-      latitude: note?.latitude,
-      longitude: note?.longitude,
-      address: note?.address,
+      latitude: locationData.latitude ?? 0.0,
+      longitude: locationData.longitude ?? 0.0,
+      address: address ?? 'example address',
       label: 'moderate',
+      isPinned: note?.isPinned ?? false,
     );
 
     // Check if a note with the same noteId already exists
@@ -51,6 +53,7 @@ class NoteUtils {
       longitude: newNote.longitude,
       address: newNote.address,
       label: newNote.label,
+      isPinned: newNote?.isPinned ?? false,
     );
   }
 

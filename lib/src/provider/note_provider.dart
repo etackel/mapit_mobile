@@ -1,57 +1,71 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/note.dart';
 import '../models/task.dart';
+import '../views/home/home_view.dart';
 
 class NoteProvider extends ChangeNotifier {
   List<Note> _notes = [
-    Note(
-      noteId: '1',
-      title: 'Grocery Shopping',
-      description: 'Buy milk, eggs, and bread',
-      latitude: 36.2509,
-      longitude: 88.1694,
-      taskList: [
-        Task(text: 'Buy milk',isCompleted: true),
-        Task(text: 'Buy eggs',isCompleted: false),
-        Task(text: 'Buy bread',isCompleted: true),
-      ],
-      address: '123 Main St, San Francisco, CA',
-    ),
-    Note(
-      noteId: '2',
-      title: 'Meeting at Work',
-      description: 'Discuss project updates at 2 PM',
-      latitude: 37.780,
-      longitude: -122.420,
-      taskList: [
-        Task(text: 'Prepare project presentation', isCompleted: false),
-        Task(text: 'Review project documents', isCompleted: true),
-        Task(text: 'Meet with team at 2 PM', isCompleted: false),
-      ],
-      address: '456 Market St, San Francisco, CA',
-    ),
+
+  ];
+
+  List<Note> _filteredNotes = [
+
   ];
 
 
+  // SharedPreferences key
+  static const String _notesKey = 'notes';
+
+  // Constructor
+  NoteProvider() {
+    // Load notes from SharedPreferences when the app starts
+    _loadNotes();
+  }
+
   // Getter for notes
   List<Note> get notes => _notes;
+  List<Note> get filteredNotes => _filteredNotes;
+
 
   // Method to add a new note
   void addNote(Note note) {
     _notes.add(note);
+    _saveNotes(); // Save notes to SharedPreferences
     notifyListeners();
   }
 
   // Method to update an existing note
   void updateNote(int index, Note updatedNote) {
+    print('Note updated: ${updatedNote.title}');
     _notes[index] = updatedNote;
+    _saveNotes();
     notifyListeners();
   }
 
   // Method to delete a note
   void deleteNote(int index) {
     _notes.removeAt(index);
+    _saveNotes();
     notifyListeners();
+  }
+
+  void _saveNotes() async {
+    print('Saving notes in SharedPreferences');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String notesJson = jsonEncode(_notes.map((note) => note.toJson()).toList());
+    await prefs.setString(_notesKey, notesJson);
+  }
+
+  void _loadNotes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? notesJson = prefs.getString(_notesKey);
+    if (notesJson != null) {
+      Iterable decoded = jsonDecode(notesJson);
+      _notes = decoded.map((json) => Note.fromJson(json)).toList();
+      notifyListeners();
+    }
   }
 
   // Method to add or update tasks for a note
@@ -63,7 +77,51 @@ class NoteProvider extends ChangeNotifier {
     if (index != -1) {
       // Update the tasks for the existing note
       _notes[index].taskList = tasks;
+      _saveNotes(); // Save notes to SharedPreferences
       notifyListeners();
     }
   }
+
+  void searchNotes(String searchText) {
+    if (searchText.isEmpty) {
+      // If search text is empty, show all notes
+      _filteredNotes = List.from(_notes);
+    } else {
+      // Filter notes based on search text
+      _filteredNotes = _notes.where((note) {
+        // You can customize this condition based on your requirements
+        return note.title.toLowerCase().contains(searchText.toLowerCase()) ||
+            note.description.toLowerCase().contains(searchText.toLowerCase()) ||
+            note.taskList.any((task) => task.text.toLowerCase().contains(searchText.toLowerCase()));
+      }).toList();
+    }
+    notifyListeners();
+  }
+
+  // Method to delete a note by ID
+  void deleteNoteById(String noteId) {
+    print('Deleting note with ID: $noteId');
+    int index = _notes.indexWhere((note) => note.noteId == noteId);
+    if (index != -1) {
+      _notes.removeAt(index);
+      _saveNotes();
+      notifyListeners();
+    }
+  }
+
+  void deleteNoteAndNavigate(BuildContext context, String noteId) {
+    deleteNoteById(noteId);
+
+    Navigator.of(context).pop();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomeScreen(),
+      ),
+    );
+  }
+
+
+
 }

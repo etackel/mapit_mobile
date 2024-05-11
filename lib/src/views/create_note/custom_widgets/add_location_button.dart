@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../models/note.dart';
 
 class LocationButton extends StatelessWidget {
   final String? address;
+  final Note? note;
 
-  LocationButton({this.address});
+  LocationButton({this.address, this.note});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,7 @@ class LocationButton extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-          if (address == null || address!.isEmpty)
+          if (address == '' || address!.isEmpty)
             const Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -74,22 +76,26 @@ class LocationButton extends StatelessWidget {
               ),
             ),
           const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-            decoration: ShapeDecoration(
-              color: const Color(0xFF12B669),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            ),
-            child: const Text(
-              'Mid Priority',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
+          note != null
+              ? Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFF12B669),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4)),
+                  ),
+                  child: Text(
+                    note!.label,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                )
+              : Container(),
         ],
       ),
     );

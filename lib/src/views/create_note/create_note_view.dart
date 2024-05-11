@@ -1,11 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mapit/src/views/create_note/custom_widgets/location_dialog.dart';
-import 'package:provider/provider.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
+import 'package:location/location.dart' ;
 import 'package:mapit/src/models/note.dart';
-import 'package:mapit/src/provider/note_provider.dart';
-import '../../utils/save_note.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../utils/save_note_options.dart';
 import '../add_location/add_location_view.dart';
+import 'custom_widgets/location_dialog.dart';
 import 'custom_widgets/task_container.dart';
 import 'custom_widgets/topBar.dart';
 import 'custom_widgets/add_location_button.dart';
@@ -24,6 +24,9 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
   late TextEditingController titleController;
   late TextEditingController descriptionController;
   late List<Task> tasks;
+  String currentAddress = 'Trying to get your current location...';
+  LocationData currentLocationData = LocationData.fromMap({});
+  bool isLoading = true; // Add isLoading state
 
   @override
   void initState() {
@@ -31,9 +34,37 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
     titleController = TextEditingController(text: widget.note?.title);
     descriptionController =
         TextEditingController(text: widget.note?.description);
-    tasks =
-        widget.note?.taskList?.map((task) => Task(text: task.text, isCompleted: task.isCompleted)).toList() ??
-            [Task(text: '', isCompleted: false)];
+    tasks = widget.note?.taskList
+        ?.map((task) => Task(text: task.text, isCompleted: task.isCompleted))
+        .toList() ??
+        [Task(text: '', isCompleted: false)];
+    if(widget.note?.address == null) {
+      _getCurrentLocation();
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    LocationData? locationData;
+    final location = Location();
+    try {
+      locationData = await location.getLocation();
+      currentLocationData = locationData;
+      final placemarks = await geocoding.placemarkFromCoordinates(
+          locationData.latitude!, locationData.longitude!);
+      String output = 'No results found.';
+      if (placemarks.isNotEmpty) {
+        output = placemarks[0].toString();
+        setState(() {
+          currentAddress = ' ${placemarks[0].street},  ${placemarks[0].subLocality} ' ?? '';
+          isLoading = false; // Set isLoading to false when location data is fetched
+        });
+      }
+    } catch (error) {
+      print("Error getting location: $error");
+      setState(() {
+        isLoading = false; // Set isLoading to false even if there's an error
+      });
+    }
   }
 
   @override
@@ -48,7 +79,8 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
         top: true,
         bottom: true,
         child: Scaffold(
-          appBar: TopBar(titleController, descriptionController, tasks, widget.note),
+          appBar: TopBar(
+              titleController, descriptionController, tasks, widget.note, currentAddress, currentLocationData),
           body: Stack(
             children: [
               ListView(
@@ -126,7 +158,8 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                               if (text.isNotEmpty &&
                                   index == tasks.length - 1) {
                                 WidgetsBinding.instance!.addPostFrameCallback(
-                                        (_) => _addNewTask());
+                                      (_) => _addNewTask(),
+                                );
                               }
                             });
                           },
@@ -143,23 +176,26 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                 alignment: Alignment.bottomCenter,
                 child: InkWell(
                   onTap: () {
-                    _saveNote();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return widget.note == null
-                            ? MapScreen()
-                            : LocationDialog(
-                          address: widget.note?.address,
-                        );
-                      }),
+                    // _saveNote();
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) => LocationBottomSheet(
+                        address: currentAddress,
+                        note: widget.note != null ? widget.note! : null,
+                      ), // Use the LocationBottomSheet widget
                     );
                   },
                   child: LocationButton(
-                    address: widget.note?.address,
+                    address: widget.note != null ? widget.note!.address : '',
+                    note: widget.note != null ? widget.note! : null,
                   ),
                 ),
               ),
+              // Add CircularProgressIndicator based on isLoading
+              if (isLoading)
+                Center(
+                  child: CircularProgressIndicator(),
+                ),
             ],
           ),
         ),
@@ -172,6 +208,31 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
   }
 
   void _saveNote() {
-    NoteUtils.saveNote(context, titleController, descriptionController, tasks, widget.note);
+    NoteUtils.saveNote(context, titleController, descriptionController, tasks, widget.note, currentAddress, currentLocationData);
+  }
+
+  void _shareNote() {
+    final noteContent = _buildNoteContent(titleController.text, descriptionController.text, tasks);
+    Share.share(noteContent);
+  }
+
+  String _buildNoteContent(String title, String description, List<Task> tasks) {
+    final StringBuffer contentBuffer = StringBuffer();
+
+    // Add title
+    contentBuffer.writeln('Title: $title');
+
+    // Add description
+    contentBuffer.writeln('Description: $description');
+
+    // Add tasks
+    if (tasks.isNotEmpty) {
+      contentBuffer.writeln('Tasks:');
+      for (final task in tasks) {
+        contentBuffer.writeln('- ${task.text}');
+      }
+    }
+
+    return contentBuffer.toString();
   }
 }

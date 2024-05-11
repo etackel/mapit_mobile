@@ -36,7 +36,10 @@ class NoteTile extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                   Text(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
                           note?.title ?? 'Untitled',
                           style: TextStyle(
                             color: Color(0xFF156FEE),
@@ -44,6 +47,11 @@ class NoteTile extends StatelessWidget {
                             fontFamily: 'Gilroy-SemiBold',
                             fontWeight: FontWeight.w400,
                           ),
+                        ),
+                        Icon(
+                          Icons.push_pin,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                       Container(
@@ -53,8 +61,7 @@ class NoteTile extends StatelessWidget {
                         decoration: BoxDecoration(),
                         child: Stack(
                           children: [
-                            // Add your icon or widget here
-                            // For example, you can use an Icon widget
+
                             Icon(
                               Icons.add_location,
                               color: Colors.white,

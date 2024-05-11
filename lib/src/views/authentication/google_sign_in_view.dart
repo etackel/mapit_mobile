@@ -1,45 +1,56 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:mapit/src/views/home/home_view.dart';
 import 'package:mapit/src/widgets/google_auth_button.dart';
 import 'package:provider/provider.dart';
 import '../../provider/user_provider.dart';
+import '../../services/google_auth_service.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
-  Future<void> _signInWithGoogle(BuildContext context) async {
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        return;
-      }
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
 
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+class _LoginScreenState extends State<LoginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    checkCurrentUser();
+  }
+
+  Future<void> checkCurrentUser() async {
+    final User? user = await SignInService.getCurrentUser();
+    if (user != null) {
+      // User is already signed in, navigate to HomeScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(),
+        ),
       );
+    }
+  }
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
+  Future<void> _signInWithGoogle(BuildContext context) async {
+    await SignInService.signInWithGoogle(context);
 
-      // Get user details
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Save user details in the provider
-        context.read<UserProvider>().setUserDetails(
-          user.displayName ?? '',
-          user.email ?? '',
-          // You can get the user's age through some additional logic
-          // or ask the user to input it during the sign-up process.
-          // For now, let's assume age is not directly available.
-          0,
-        );
-      }
-    } catch (e) {
-      print('Error signing in with Google: $e');
-      // Handle error (show a message, log the error, etc.)
+    // Get user details after sign-in
+    final User? user = await SignInService.getCurrentUser();
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(),
+        ),
+      );
+      context.read<UserProvider>().setUserDetails(
+        user.displayName ?? '',
+        user.email ?? '',
+        user.photoURL ?? '',
+        0,
+      );
     }
   }
 

@@ -10,51 +10,39 @@ import 'custom_widgets/fab.dart';
 import 'custom_widgets/topBarWidget.dart';
 import '../../models/note.dart';
 import '../create_note/create_note_view.dart';
+import 'dart:math' show asin, atan2, cos, pi, sin, sqrt;
 
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) {
-    // Initialize necessary services
     WidgetsFlutterBinding.ensureInitialized();
-
-    // Example background task logic
+    Workmanager().initialize(callbackDispatcher);
     if (task == "locationUpdates") {
-      // Retrieve data needed for location updates (e.g., notes)
       List<Note> notes = _retrieveNotes();
       _updateLocationInBackground(notes);
     } else {
       print("Unknown task: $task");
     }
-
-    return Future.value(true); // Return a Future
+    return Future.value(true);
   });
 }
 
-// Function to retrieve notes
 List<Note> _retrieveNotes() {
-  // Create an instance of NoteProvider
   NoteProvider noteProvider = NoteProvider();
-
-  // Access the list of notes from the provider
   List<Note> notes = noteProvider.notes;
-
   return notes;
 }
 
 void _updateLocationInBackground(List<Note> notes) {
-  // Perform location updates or any other background task
   Location().getLocation().then((LocationData locationData) {
-    // Process location data
     print("Location updated in background: $locationData");
-    // Check geofences based on the updated location
     _checkGeofenceInBackground(locationData, notes);
-    print(notes.first.noteId.toString());
   }).catchError((error) {
     print("Error updating location in background: $error");
   });
 }
 
 void _checkGeofenceInBackground(LocationData locationData, List<Note> notes) {
-  // Check geofences against the updated location
+  print("Checking geofence in background");
   for (Note note in notes) {
     int noteLatitudeInt = note.latitude?.toInt() ?? 0;
     int noteLongitudeInt = note.longitude?.toInt() ?? 0;
@@ -62,7 +50,8 @@ void _checkGeofenceInBackground(LocationData locationData, List<Note> notes) {
     int userLatitudeInt = locationData.latitude?.toInt() ?? 0;
     int userLongitudeInt = locationData.longitude?.toInt() ?? 0;
 
-    if (userLatitudeInt == noteLatitudeInt && userLongitudeInt == noteLongitudeInt) {
+    if (userLatitudeInt == noteLatitudeInt &&
+        userLongitudeInt == noteLongitudeInt) {
       _showNoteFoundNotification();
       print("Note found near your location: ${note.title}");
       break;
@@ -85,15 +74,13 @@ void _showNoteFoundNotification() async {
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Register the background task
   Workmanager().initialize(callbackDispatcher);
   Workmanager().registerPeriodicTask(
-    '1', // Unique ID for the task
-    'locationUpdates', // Task name
-    frequency: Duration(seconds: 3), // Adjust as needed
-  );  AwesomeNotifications().initialize(
-    // Add your initialization settings here
+    '1',
+    'locationUpdates',
+    frequency: Duration(seconds: 3),
+  );
+  AwesomeNotifications().initialize(
     null,
     [
       NotificationChannel(
@@ -124,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late PermissionStatus _permissionGranted;
   late LocationData _locationData;
 
-
   @override
   void initState() {
     super.initState();
@@ -135,7 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkLocationPermission() async {
-
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
@@ -162,20 +147,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   void _startLocationUpdates() {
-    // Run location updates task periodically in the background
     Workmanager().registerPeriodicTask(
       'locationUpdates',
       'locationUpdatesTask',
-      frequency: Duration(minutes: 15), // Adjust as needed
+      frequency: Duration(minutes: 15),
     );
 
-    // Listen for location changes in the foreground
     location.onLocationChanged.listen((LocationData currentLocation) {
       setState(() {
         _locationData = currentLocation;
-        NoteProvider noteProvider = Provider.of<NoteProvider>(context, listen: false);
+        NoteProvider noteProvider =
+            Provider.of<NoteProvider>(context, listen: false);
         List<Note> notes = noteProvider.notes;
         checkGeofence(notes);
         print("Location updated: $_locationData");
@@ -184,19 +167,42 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void checkGeofence(List<Note> notes) {
+    const double radius = 1; // Radius in kilometers
+
     for (Note note in notes) {
-      int noteLatitudeInt = note.latitude?.toInt() ?? 0;
-      int noteLongitudeInt = note.longitude?.toInt() ?? 0;
+      double noteLatitude = note.latitude ?? 0;
+      double noteLongitude = note.longitude ?? 0;
 
-      int userLatitudeInt = _locationData.latitude?.toInt() ?? 0;
-      int userLongitudeInt = _locationData.longitude?.toInt() ?? 0;
+      double userLatitude = _locationData.latitude ?? 0;
+      double userLongitude = _locationData.longitude ?? 0;
 
-      if (userLatitudeInt == noteLatitudeInt && userLongitudeInt == noteLongitudeInt) {
+      double distance = calculateDistance(noteLatitude, noteLongitude, userLatitude, userLongitude);
+
+      if (distance <= radius) {
         _showNoteFoundNotification();
         print("Note found near your location: ${note.title}");
         break;
       }
     }
+  }
+
+  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const int R = 6371; // Radius of the Earth in kilometers
+    double dLat = _degreesToRadians(lat2 - lat1);
+    double dLon = _degreesToRadians(lon2 - lon1);
+
+    lat1 = _degreesToRadians(lat1);
+    lat2 = _degreesToRadians(lat2);
+
+    double a = sin(dLat/2) * sin(dLat/2) +
+        sin(dLon/2) * sin(dLon/2) * cos(lat1) * cos(lat2);
+    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+
+    return R * c; // Distance in kilometers
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * pi / 180;
   }
 
 
@@ -223,8 +229,8 @@ class _HomeScreenState extends State<HomeScreen> {
       top: true,
       bottom: true,
       child: Scaffold(
-        key: _scaffoldKey, // Set the key here
-        appBar: TopBar(scaffoldKey: _scaffoldKey), // Pass the key to the TopBar
+        key: _scaffoldKey,
+        appBar: TopBar(scaffoldKey: _scaffoldKey),
         body: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
@@ -237,26 +243,71 @@ class _HomeScreenState extends State<HomeScreen> {
                       shrinkWrap: true,
                       itemCount: dummyNoteList.length,
                       itemBuilder: (context, index) {
+                        final Note note = dummyNoteList[index];
                         return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CreateNoteScreen(
-                                      note: dummyNoteList[index],
-                                    ),
-                                  ),
-                                );
+                            Dismissible(
+                              key: UniqueKey(),
+                              direction: DismissDirection.horizontal,
+                              background: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10), // Rounded rectangles
+                                  color: Colors.green.withOpacity(0.8), // Color for pinning with opacity
+                                ),
+                                alignment: Alignment.centerLeft,
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.push_pin, color: Colors.white),
+                                    SizedBox(width: 10),
+                                    Text('Pin', style: TextStyle(color: Colors.white)),
+                                  ],
+                                ),
+                              ),
+                              secondaryBackground: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10), // Rounded rectangles
+                                  color: Colors.red.withOpacity(0.8), // Color for deleting with opacity
+                                ),
+                                alignment: Alignment.centerRight,
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text('Delete', style: TextStyle(color: Colors.white)),
+                                    SizedBox(width: 10),
+                                    Icon(Icons.delete, color: Colors.white),
+                                  ],
+                                ),
+                              ),
+                              onDismissed: (direction) {
+                                if (direction == DismissDirection.endToStart) {
+                                  // Delete note if swiped from right to left
+                                  noteProvider.deleteNote(index);
+                                } else if (direction == DismissDirection.startToEnd) {
+                                  // Toggle pin status if swiped from left to right
+                                  note.isPinned = !note.isPinned;
+                                  noteProvider.updateNote(noteProvider.notes.indexWhere((n) => n.noteId == note.noteId), note);
+                                }
                               },
-                              child: NoteTile(
-                                note: dummyNoteList[index],
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CreateNoteScreen(
+                                        note: note,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: NoteTile(
+                                  note: note,
+                                ),
                               ),
                             ),
-                            const SizedBox(
-                              height: 10,
-                            ),
+                            SizedBox(height: 8,),
                           ],
                         );
                       },
@@ -268,9 +319,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
 
-        drawer: NavDrawer(), // Drawer on the left side
+        drawer: NavDrawer(),
         floatingActionButton: CustomFloatingActionButton(),
       ),
     );
   }
+
+
 }

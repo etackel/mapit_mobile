@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapit/src/models/task.dart';
-import 'package:mapit/src/utils/save_note.dart';
+import 'package:mapit/src/utils/save_note_options.dart';
 import 'package:mapit/src/models/note.dart';
 
 class TaskContainer extends StatefulWidget {

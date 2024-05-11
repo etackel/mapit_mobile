@@ -17,7 +17,10 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -46,30 +49,22 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDwGd_npZ57_pG4erXuS2qtPg90dJzyBPY',
-    appId: '1:24985500781:web:0c334e3daeb04326c79364',
-    messagingSenderId: '24985500781',
-    projectId: 'mapit-a4712',
-    authDomain: 'mapit-a4712.firebaseapp.com',
-    storageBucket: 'mapit-a4712.appspot.com',
-    measurementId: 'G-67WF8DHJ74',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBsgxuhF5g6jb9bY1gtsp2c9dXxvkttEJ4',
-    appId: '1:24985500781:android:fa2431fdb5c9bc28c79364',
-    messagingSenderId: '24985500781',
-    projectId: 'mapit-a4712',
-    storageBucket: 'mapit-a4712.appspot.com',
+    apiKey: 'AIzaSyBRUC8IGL_N_7ty5lJHu9ERxOvaJZ7AP0E',
+    appId: '1:455325735038:android:276c3a4b0109031d6be02f',
+    messagingSenderId: '455325735038',
+    projectId: 'mapit-etackel',
+    storageBucket: 'mapit-etackel.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBp_kd3pGJohccHdUzT5EqzVQnN2uqUhyY',
-    appId: '1:24985500781:ios:047357bdf4074b65c79364',
-    messagingSenderId: '24985500781',
-    projectId: 'mapit-a4712',
-    storageBucket: 'mapit-a4712.appspot.com',
+    apiKey: 'AIzaSyC6h6COUjJuAS8wIKJndIOen4x1UNqO4gQ',
+    appId: '1:455325735038:ios:2da5ad16598ac2c36be02f',
+    messagingSenderId: '455325735038',
+    projectId: 'mapit-etackel',
+    storageBucket: 'mapit-etackel.appspot.com',
+    iosClientId: '455325735038-qgfjdajdgd7re9ou0b673mi1ajkki9t1.apps.googleusercontent.com',
     iosBundleId: 'com.etackel.mapit',
   );
+
 }

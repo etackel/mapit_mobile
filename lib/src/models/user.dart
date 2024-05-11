@@ -4,7 +4,12 @@ class User {
   final String name;
   final DateTime dateOfBirth;
 
-  User({required this.id, required this.email, required this.name, required this.dateOfBirth});
+  User({
+    required this.id,
+    required this.email,
+    required this.name,
+    required this.dateOfBirth,
+  });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
