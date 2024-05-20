@@ -15,28 +15,22 @@ class NoteProvider extends ChangeNotifier {
   ];
 
 
-  // SharedPreferences key
   static const String _notesKey = 'notes';
 
-  // Constructor
   NoteProvider() {
-    // Load notes from SharedPreferences when the app starts
     _loadNotes();
   }
 
-  // Getter for notes
   List<Note> get notes => _notes;
   List<Note> get filteredNotes => _filteredNotes;
 
 
-  // Method to add a new note
   void addNote(Note note) {
     _notes.add(note);
-    _saveNotes(); // Save notes to SharedPreferences
+    _saveNotes();
     notifyListeners();
   }
 
-  // Method to update an existing note
   void updateNote(int index, Note updatedNote) {
     print('Note updated: ${updatedNote.title}');
     _notes[index] = updatedNote;
@@ -44,7 +38,6 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Method to delete a note
   void deleteNote(int index) {
     _notes.removeAt(index);
     _saveNotes();
@@ -68,28 +61,21 @@ class NoteProvider extends ChangeNotifier {
     }
   }
 
-  // Method to add or update tasks for a note
   void saveTasks(Note note, List<Task> tasks) {
-    // Find the index of the note in the list
     int index = _notes.indexOf(note);
 
-    // Check if the note exists in the list
     if (index != -1) {
-      // Update the tasks for the existing note
       _notes[index].taskList = tasks;
-      _saveNotes(); // Save notes to SharedPreferences
+      _saveNotes();
       notifyListeners();
     }
   }
 
   void searchNotes(String searchText) {
     if (searchText.isEmpty) {
-      // If search text is empty, show all notes
       _filteredNotes = List.from(_notes);
     } else {
-      // Filter notes based on search text
       _filteredNotes = _notes.where((note) {
-        // You can customize this condition based on your requirements
         return note.title.toLowerCase().contains(searchText.toLowerCase()) ||
             note.description.toLowerCase().contains(searchText.toLowerCase()) ||
             note.taskList.any((task) => task.text.toLowerCase().contains(searchText.toLowerCase()));
@@ -98,7 +84,6 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Method to delete a note by ID
   void deleteNoteById(String noteId) {
     print('Deleting note with ID: $noteId');
     int index = _notes.indexWhere((note) => note.noteId == noteId);

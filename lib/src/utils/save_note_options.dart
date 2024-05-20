@@ -4,9 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:mapit/src/models/note.dart';
 import 'package:mapit/src/provider/note_provider.dart';
 import '../models/task.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class NoteUtils {
-  static void saveNote(BuildContext context, TextEditingController titleController, TextEditingController descriptionController, List<Task> tasks, Note? note, String address, LocationData locationData) {
+  static String saveNote(BuildContext context, TextEditingController titleController, TextEditingController descriptionController, List<Task> tasks, Note? note, String address, LocationData locationData) {
     print('calling save note');
     final noteProvider = Provider.of<NoteProvider>(context, listen: false);
 
@@ -19,21 +20,18 @@ class NoteUtils {
       latitude: locationData.latitude ?? 0.0,
       longitude: locationData.longitude ?? 0.0,
       address: address ?? 'example address',
-      label: 'moderate',
+      label: note?.label ?? 'moderate',
       isPinned: note?.isPinned ?? false,
     );
 
-    // Check if a note with the same noteId already exists
     final existingNoteIndex = noteProvider.notes.indexWhere((n) => n.noteId == newNote.noteId);
 
     if (existingNoteIndex != -1) {
-      // Update the existing note
       final updatedNote = _updateNoteProperties(noteProvider.notes[existingNoteIndex], newNote);
 
       noteProvider.updateNote(existingNoteIndex, updatedNote);
       print('Note updated: ${updatedNote.title}');
     } else {
-      // Add the new note
       if (newNote.title!.isNotEmpty || newNote.description!.isNotEmpty) {
         noteProvider.addNote(newNote);
         print('Note saved: ${newNote.title}');
@@ -41,6 +39,8 @@ class NoteUtils {
         print('Note not saved: Title and description are empty');
       }
     }
+
+    return newNote.noteId;
   }
 
   static Note _updateNoteProperties(Note existingNote, Note newNote) {
@@ -60,5 +60,46 @@ class NoteUtils {
   static void addNewTask(List<Task> tasks, Function setState) {
     tasks.add(Task(text: '', isCompleted: false));
     setState(() {});
+  }
+
+  static void updateNoteLocation(BuildContext context, String noteId, String address, LatLng locationData) {
+    final noteProvider = Provider.of<NoteProvider>(context, listen: false);
+
+    final noteIndex = noteProvider.notes.indexWhere((note) => note.noteId == noteId);
+
+    if (noteIndex != -1) {
+      noteProvider.notes[noteIndex].latitude = locationData.latitude ?? 0.0;
+      noteProvider.notes[noteIndex].longitude = locationData.longitude ?? 0.0;
+      print('location ${locationData.longitude}');
+      noteProvider.notes[noteIndex].address = address;
+      noteProvider.updateNote(noteIndex, noteProvider.notes[noteIndex]);
+      print('Note location updated: ${noteProvider.notes[noteIndex].title}');
+    } else {
+      print('Note not found: $noteId');
+    }
+  }
+
+  static void updateNotePriority(BuildContext context, String noteId, int priorityLevel) {
+    final noteProvider = Provider.of<NoteProvider>(context, listen: false);
+
+    final noteIndex = noteProvider.notes.indexWhere((note) => note.noteId == noteId);
+
+    if (noteIndex != -1) {
+      switch (priorityLevel) {
+        case 0:
+          noteProvider.notes[noteIndex].label = 'low';
+          break;
+        case 1:
+          noteProvider.notes[noteIndex].label = 'moderate';
+          break;
+        case 2:
+          noteProvider.notes[noteIndex].label = 'high';
+          break;
+      }
+      noteProvider.updateNote(noteIndex, noteProvider.notes[noteIndex]);
+      print('Note priority updated: ${noteProvider.notes[noteIndex].label}');
+    } else {
+      print('Note not found: $noteId');
+    }
   }
 }

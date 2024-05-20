@@ -1,23 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:mapit/src/views/add_location/add_location_view.dart';
+import 'package:provider/provider.dart';
 import '../../../models/note.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../../provider/note_provider.dart';
+import '../../../utils/save_note_options.dart';
 
 class LocationBottomSheet extends StatefulWidget {
-  final String? address;
-  final Note? note;
+  Note? note;
+  String address = 'No Location Selected';
 
-  LocationBottomSheet({this.address, this.note});
+  LocationBottomSheet({this.note});
 
   @override
   _LocationBottomSheetState createState() => _LocationBottomSheetState();
 }
 
 class _LocationBottomSheetState extends State<LocationBottomSheet> {
-  double _priorityValue = 0.5; // Default priority value
-
+  double _priorityValue = 1;
   @override
   Widget build(BuildContext context) {
+    final noteProvider = Provider.of<NoteProvider>(context, listen: true);
+    if(widget.note != null) {
+      final LocalNote = noteProvider.notes.firstWhere((note) => note.noteId == widget.note?.noteId);
+      widget.address = LocalNote.address;
+      widget.note = LocalNote;
+    }
+    print('note label check............. ${widget.note!.label}'); // Debug log
+    switch(widget.note?.label) {
+      case 'low':
+        _priorityValue = 0;
+        break;
+      case 'moderate':
+        _priorityValue = 1;
+        break;
+      case 'high':
+        _priorityValue = 2;
+        break;
+      default:
+        _priorityValue = 1;
+    }
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -37,7 +60,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFECFDF3),
+              color: Colors.blueAccent,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -48,7 +71,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFECFDF3),
+                    color: Colors.blueAccent,
                   ),
                   child: Icon(
                     Icons.place,
@@ -62,7 +85,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Mid Priority',
+                        widget.address,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -90,8 +113,26 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                 ),
               ),
               GestureDetector(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => MapScreen()));
+                onTap: () async {
+                  if(widget.note != null) {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapScreen(
+                          NoteId: widget.note?.noteId ??'', onLocationSelected: (LatLng ) {  },
+                        ),
+                      ),
+                    );
+                    setState(() {});
+                  }
+                  else {
+                    Navigator.pop(context);
+                    SnackBar snackBar = SnackBar(
+                      content: Text('Please create the note first'),
+                    );
+                    snackBar.showCloseIcon;
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  }
                 },
                 child: Container(
                   width: 24,
@@ -126,13 +167,13 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
               Slider(
                 value: _priorityValue,
                 onChanged: (value) {
-                  setState(() {
                     _priorityValue = value;
-                  });
+                    print('Priority value: ${widget.note?.label}'); // Debug log
+                    NoteUtils.updateNotePriority(context, widget.note?.noteId ?? '', value.round());
                 },
                 min: 0,
-                max: 1,
-                divisions: 100,
+                max: 2,
+                divisions: 2,
                 label: 'Priority',
               ),
               Text(
@@ -148,7 +189,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
           ),
           SizedBox(height: 12),
           Text(
-            'Remind within ${(5 * _priorityValue).round()} kms of the location',
+            'Remind within ${(1 * _priorityValue).round()} kms of the location',
             style: TextStyle(
               color: Color(0xFF101828),
               fontSize: 10,
@@ -160,4 +201,13 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
       ),
     );
   }
+
+
+
+  Future<String> _getAddress(LatLng location) async {
+    List<Placemark> placemarks =
+    await placemarkFromCoordinates(location.latitude, location.longitude);
+    return placemarks[0].street.toString();
+  }
+
 }

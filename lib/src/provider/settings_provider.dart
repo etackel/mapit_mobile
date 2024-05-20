@@ -7,8 +7,8 @@ class AppSettingsProvider extends ChangeNotifier {
   Priority _defaultPriority = Priority.Medium;
   List<PriorityDistance> _priorityDistances = [
     PriorityDistance(priority: Priority.Low, distance: 100),
-    PriorityDistance(priority: Priority.Medium, distance: 200),
-    PriorityDistance(priority: Priority.High, distance: 300),
+    PriorityDistance(priority: Priority.Medium, distance: 500),
+    PriorityDistance(priority: Priority.High, distance: 1000),
   ];
 
   Priority get defaultPriority => _defaultPriority;

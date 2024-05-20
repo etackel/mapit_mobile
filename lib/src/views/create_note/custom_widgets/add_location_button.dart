@@ -86,7 +86,7 @@ class LocationButton extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4)),
                   ),
                   child: Text(
-                    note!.label,
+                    note!.label!,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 10,

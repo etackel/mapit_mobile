@@ -8,7 +8,7 @@ class Note {
   double longitude;
   List<Task> taskList;
   String address;
-  String label;
+  String? label;
   bool isPinned;
 
   Note({
@@ -19,7 +19,7 @@ class Note {
     required this.longitude,
     required this.taskList,
     required this.address,
-    this.label = 'moderate',
+    this.label,
     required this.isPinned ,
   });
 
@@ -32,6 +32,7 @@ class Note {
       longitude: json['longitude'],
       taskList: List<Task>.from(json['taskList'].map((taskJson) => Task.fromJson(taskJson))),
       address: json['address'],
+      label: json['label'],
       isPinned: json['isPinned'] ?? false,
     );
   }
@@ -45,6 +46,7 @@ class Note {
       'longitude': longitude,
       'taskList': taskList.map((task) => task.toJson()).toList(),
       'address': address,
+      'label': label,
       'isPinned': isPinned, // Include isPinned in JSON
     };
   }

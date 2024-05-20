@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:location/location.dart' ;
 import 'package:mapit/src/models/note.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../provider/note_provider.dart';
 import '../../utils/save_note_options.dart';
-import '../add_location/add_location_view.dart';
 import 'custom_widgets/location_dialog.dart';
 import 'custom_widgets/task_container.dart';
 import 'custom_widgets/topBar.dart';
@@ -12,8 +13,8 @@ import 'custom_widgets/add_location_button.dart';
 import '../../models/task.dart';
 
 class CreateNoteScreen extends StatefulWidget {
-  final Note? note;
-
+  Note? note;
+  String address = 'No Location Selected';
   CreateNoteScreen({this.note});
 
   @override
@@ -24,7 +25,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
   late TextEditingController titleController;
   late TextEditingController descriptionController;
   late List<Task> tasks;
-  String currentAddress = 'Trying to get your current location...';
+  String newNoteId = '';
   LocationData currentLocationData = LocationData.fromMap({});
   bool isLoading = true; // Add isLoading state
 
@@ -39,36 +40,50 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
         .toList() ??
         [Task(text: '', isCompleted: false)];
     if(widget.note?.address == null) {
-      _getCurrentLocation();
+      // _getCurrentLocation();
     }
   }
 
-  Future<void> _getCurrentLocation() async {
-    LocationData? locationData;
-    final location = Location();
-    try {
-      locationData = await location.getLocation();
-      currentLocationData = locationData;
-      final placemarks = await geocoding.placemarkFromCoordinates(
-          locationData.latitude!, locationData.longitude!);
-      String output = 'No results found.';
-      if (placemarks.isNotEmpty) {
-        output = placemarks[0].toString();
-        setState(() {
-          currentAddress = ' ${placemarks[0].street},  ${placemarks[0].subLocality} ' ?? '';
-          isLoading = false; // Set isLoading to false when location data is fetched
-        });
-      }
-    } catch (error) {
-      print("Error getting location: $error");
-      setState(() {
-        isLoading = false; // Set isLoading to false even if there's an error
-      });
-    }
-  }
+  // Future<void> _getCurrentLocation() async {
+  //   LocationData? locationData;
+  //   final location = Location();
+  //   try {
+  //     locationData = await location.getLocation();
+  //     currentLocationData = locationData;
+  //     final placemarks = await geocoding.placemarkFromCoordinates(
+  //         locationData.latitude!, locationData.longitude!);
+  //     String output = 'No results found.';
+  //     if (placemarks.isNotEmpty) {
+  //       output = placemarks[0].toString();
+  //       setState(() {
+  //         currentAddress = ' ${placemarks[0].street},  ${placemarks[0].subLocality} ' ?? '';
+  //         isLoading = false; // Set isLoading to false when location data is fetched
+  //       });
+  //     }
+  //   } catch (error) {
+  //     print("Error getting location: $error");
+  //     setState(() {
+  //       isLoading = false; // Set isLoading to false even if there's an error
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
+    final noteProvider = Provider.of<NoteProvider>(context, listen: true);
+    if(widget.note != null) {
+      final LocalNote = noteProvider.notes.firstWhere((note) => note.noteId == widget.note?.noteId);
+      widget.address = LocalNote.address;
+    }
+    else {
+      if(newNoteId != ''){
+        print(newNoteId);
+        widget.note = noteProvider.notes.firstWhere((note) => note.noteId == newNoteId);
+      }
+      else{
+        print('No note found');
+      }
+    }
     return WillPopScope(
       onWillPop: () async {
         print('onWillPop');
@@ -80,7 +95,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
         bottom: true,
         child: Scaffold(
           appBar: TopBar(
-              titleController, descriptionController, tasks, widget.note, currentAddress, currentLocationData),
+              titleController, descriptionController, tasks, widget.note, widget.note == null ? 'No Location Selected' : widget.note!.address, currentLocationData),
           body: Stack(
             children: [
               ListView(
@@ -91,8 +106,18 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                       children: [
                         TextField(
                           controller: titleController,
-                          onChanged: (text) {},
-                          onEditingComplete: _saveNote,
+                          onChanged: (text) { },
+                          onEditingComplete: ()
+                          {
+                            setState(() {
+                              if (widget.note == null) {
+                                newNoteId == '' ? newNoteId = _saveNote() : null;
+                              }
+                              else {
+                                _saveNote();
+                              }
+                            });
+                          },
                           decoration: const InputDecoration(
                             hintText: 'Title',
                             hintStyle: TextStyle(
@@ -120,7 +145,17 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                         TextField(
                           controller: descriptionController,
                           onChanged: (text) {},
-                          onEditingComplete: _saveNote,
+                          onEditingComplete: ()
+                          {
+                            setState(() {
+                              if (widget.note == null) {
+                                newNoteId == '' ? newNoteId = _saveNote() : null;
+                              }
+                              else {
+                                _saveNote();
+                              }
+                            });
+                          },
                           decoration: const InputDecoration(
                             hintText: 'Description',
                             hintStyle: TextStyle(
@@ -176,26 +211,28 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
                 alignment: Alignment.bottomCenter,
                 child: InkWell(
                   onTap: () {
-                    // _saveNote();
+                    setState(() {
+                      if (widget.note == null) {
+                        newNoteId == '' ? newNoteId = _saveNote() : null;
+                        widget.note = noteProvider.notes.firstWhere((note) => note.noteId == newNoteId);
+                      }
+                      else {
+                        _saveNote();
+                      }
+                    });
                     showModalBottomSheet(
                       context: context,
                       builder: (context) => LocationBottomSheet(
-                        address: currentAddress,
                         note: widget.note != null ? widget.note! : null,
                       ), // Use the LocationBottomSheet widget
                     );
                   },
                   child: LocationButton(
-                    address: widget.note != null ? widget.note!.address : '',
+                    address: widget.address,
                     note: widget.note != null ? widget.note! : null,
                   ),
                 ),
               ),
-              // Add CircularProgressIndicator based on isLoading
-              if (isLoading)
-                Center(
-                  child: CircularProgressIndicator(),
-                ),
             ],
           ),
         ),
@@ -207,8 +244,8 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
     NoteUtils.addNewTask(tasks, setState);
   }
 
-  void _saveNote() {
-    NoteUtils.saveNote(context, titleController, descriptionController, tasks, widget.note, currentAddress, currentLocationData);
+  String _saveNote() {
+    return NoteUtils.saveNote(context, titleController, descriptionController, tasks, widget.note, widget.note == null ? 'No Location Selected' : widget.note!.address, currentLocationData);
   }
 
   void _shareNote() {

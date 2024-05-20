@@ -161,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Provider.of<NoteProvider>(context, listen: false);
         List<Note> notes = noteProvider.notes;
         checkGeofence(notes);
-        print("Location updated: $_locationData");
+        // print("Location updated: $_locationData");
       });
     });
   }
@@ -231,15 +231,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: TopBar(scaffoldKey: _scaffoldKey),
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
+        body: Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Consumer<NoteProvider>(
                   builder: (context, noteProvider, child) {
                     return ListView.builder(
+                      scrollDirection: Axis.vertical,
                       shrinkWrap: true,
                       itemCount: dummyNoteList.length,
                       itemBuilder: (context, index) {
@@ -317,8 +316,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-        ),
-
         drawer: NavDrawer(),
         floatingActionButton: CustomFloatingActionButton(),
       ),
