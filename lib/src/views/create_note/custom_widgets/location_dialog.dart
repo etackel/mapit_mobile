@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../../../models/note.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../provider/note_provider.dart';
+import '../../../provider/settings_provider.dart';
 import '../../../utils/save_note_options.dart';
+import '../../../models/priority.dart';
 
 class LocationBottomSheet extends StatefulWidget {
   Note? note;
@@ -22,43 +24,50 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final noteProvider = Provider.of<NoteProvider>(context, listen: true);
+    final settingsProvider = Provider.of<AppSettingsProvider>(context, listen: false);
+    double radius;
+
     if(widget.note != null) {
       final LocalNote = noteProvider.notes.firstWhere((note) => note.noteId == widget.note?.noteId);
       widget.address = LocalNote.address;
       widget.note = LocalNote;
     }
-    print('note label check............. ${widget.note!.label}'); // Debug log
     switch(widget.note?.label) {
       case 'low':
         _priorityValue = 0;
+        radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.low).distance;
         break;
       case 'moderate':
         _priorityValue = 1;
+        radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.moderate).distance;
         break;
       case 'high':
         _priorityValue = 2;
+        radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.high).distance;
         break;
       default:
         _priorityValue = 1;
+        radius = 0; // Default radius if label doesn't match any case
     }
+
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             widget.note != null ? 'Note location' :  'Add new location',
-            style: TextStyle(
+            style: const TextStyle(
               color: Color(0xFF156FEE),
               fontSize: 20,
               fontFamily: 'Gilroy-SemiBold',
               fontWeight: FontWeight.w400,
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.blueAccent,
               borderRadius: BorderRadius.circular(8),
@@ -69,24 +78,24 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                   width: 24,
                   height: 24,
                   clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.blueAccent,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.place,
                     color: Color(0xFF156FEE),
                     size: 16,
                   ),
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.address,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
                           fontFamily: 'Roboto',
@@ -99,11 +108,11 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
               ],
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Change Location',
                 style: TextStyle(
                   color: Color(0xFF156FEE),
@@ -127,7 +136,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                   }
                   else {
                     Navigator.pop(context);
-                    SnackBar snackBar = SnackBar(
+                    SnackBar snackBar = const SnackBar(
                       content: Text('Please create the note first'),
                     );
                     snackBar.showCloseIcon;
@@ -142,7 +151,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                     shape: BoxShape.circle,
                     color: Colors.grey[300],
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.delete_forever_outlined,
                     color: Color(0xFF156FEE),
                     size: 16,
@@ -151,11 +160,11 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
               ),
             ],
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Low',
                 style: TextStyle(
                   color: Color(0xFF156FEE),
@@ -168,7 +177,6 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                 value: _priorityValue,
                 onChanged: (value) {
                     _priorityValue = value;
-                    print('Priority value: ${widget.note?.label}'); // Debug log
                     NoteUtils.updateNotePriority(context, widget.note?.noteId ?? '', value.round());
                 },
                 min: 0,
@@ -176,7 +184,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                 divisions: 2,
                 label: 'Priority',
               ),
-              Text(
+              const Text(
                 'Urgent',
                 style: TextStyle(
                   color: Color(0xFFF79009),
@@ -187,10 +195,10 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
-            'Remind within ${(1 * _priorityValue).round()} kms of the location',
-            style: TextStyle(
+            'Remind within ${radius.round()} meters of the location',
+            style: const TextStyle(
               color: Color(0xFF101828),
               fontSize: 10,
               fontFamily: 'Gilroy-Medium',

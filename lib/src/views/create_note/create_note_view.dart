@@ -26,8 +26,12 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
   late TextEditingController descriptionController;
   late List<Task> tasks;
   String newNoteId = '';
-  LocationData currentLocationData = LocationData.fromMap({});
   bool isLoading = true; // Add isLoading state
+  LocationData locationData = LocationData.fromMap({
+    "latitude": 0.0,
+    "longitude": 0.0
+  });
+  late LocationData noLocationData;
 
   @override
   void initState() {
@@ -74,13 +78,20 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
     if(widget.note != null) {
       final LocalNote = noteProvider.notes.firstWhere((note) => note.noteId == widget.note?.noteId);
       widget.address = LocalNote.address;
+      locationData = LocationData.fromMap({
+        "latitude": LocalNote.latitude,
+        "longitude": LocalNote.longitude
+      });
     }
     else {
       if(newNoteId != ''){
-        print(newNoteId);
         widget.note = noteProvider.notes.firstWhere((note) => note.noteId == newNoteId);
       }
       else{
+        noLocationData = LocationData.fromMap({
+          "latitude": 0.0,
+          "longitude": 0.0
+        });
         print('No note found');
       }
     }
@@ -95,7 +106,7 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
         bottom: true,
         child: Scaffold(
           appBar: TopBar(
-              titleController, descriptionController, tasks, widget.note, widget.note == null ? 'No Location Selected' : widget.note!.address, currentLocationData),
+              titleController, descriptionController, tasks, widget.note, widget.note == null ? 'No Location Selected' : widget.note!.address, widget.note == null ?  noLocationData : locationData),
           body: Stack(
             children: [
               ListView(
@@ -245,7 +256,10 @@ class _CreateNoteScreenState extends State<CreateNoteScreen> {
   }
 
   String _saveNote() {
-    return NoteUtils.saveNote(context, titleController, descriptionController, tasks, widget.note, widget.note == null ? 'No Location Selected' : widget.note!.address, currentLocationData);
+    print('calling save note process');
+    print(locationData.latitude);
+    print(locationData.longitude);
+    return NoteUtils.saveNote(context, titleController, descriptionController, tasks, widget.note, widget.note == null ? 'No Location Selected' : widget.note!.address, widget.note == null ? noLocationData : locationData);
   }
 
   void _shareNote() {

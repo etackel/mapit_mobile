@@ -10,28 +10,28 @@ class SettingsScreen extends StatelessWidget {
       top: true,
       bottom: true,
       child: Scaffold(
-      appBar: AppBar(
-        title: Text('Settings'),
+        appBar: AppBar(
+          title: Text('Settings'),
+        ),
+        body: ListView(
+          children: [
+            ListTile(
+              title: Text('Default Priority'),
+              subtitle: Text('Change the default priority setting'),
+              onTap: () {
+                _showDefaultPriorityDialog(context);
+              },
+            ),
+            ListTile(
+              title: Text('Priority Distances'),
+              subtitle: Text('Change the distance settings for each priority'),
+              onTap: () {
+                _showPriorityDistanceDialog(context);
+              },
+            ),
+          ],
+        ),
       ),
-      body: ListView(
-        children: [
-          ListTile(
-            title: Text('Default Priority'),
-            subtitle: Text('Change the default priority setting'),
-            onTap: () {
-              _showDefaultPriorityDialog(context);
-            },
-          ),
-          ListTile(
-            title: Text('Priority Distances'),
-            subtitle: Text('Change the distance settings for each priority'),
-            onTap: () {
-              _showPriorityDistanceDialog(context);
-            },
-          ),
-        ],
-      ),
-    ),
     );
   }
 

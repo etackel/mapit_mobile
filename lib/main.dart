@@ -25,6 +25,8 @@ import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final settingsProvider = AppSettingsProvider();
+  await settingsProvider.loadSettings();
   initPlatformState();
   await initializeService();
   await AwesomeNotifications().initialize(

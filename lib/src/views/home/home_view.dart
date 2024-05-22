@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
+import '../../models/priority.dart';
 import '../../provider/note_provider.dart';
+import '../../provider/settings_provider.dart';
 import 'custom_widgets/navBar.dart';
 import 'custom_widgets/note_card.dart';
 import 'custom_widgets/fab.dart';
@@ -161,25 +163,42 @@ class _HomeScreenState extends State<HomeScreen> {
             Provider.of<NoteProvider>(context, listen: false);
         List<Note> notes = noteProvider.notes;
         checkGeofence(notes);
-        // print("Location updated: $_locationData");
+        print("Location updated: $_locationData");
       });
     });
   }
 
   void checkGeofence(List<Note> notes) {
-    const double radius = 1; // Radius in kilometers
+    // Get the settings provider
+    final settingsProvider = Provider.of<AppSettingsProvider>(context, listen: false);
 
     for (Note note in notes) {
-      double noteLatitude = note.latitude ?? 0;
-      double noteLongitude = note.longitude ?? 0;
+      double radius;
 
+      // Get the label of the note and set the radius accordingly
+      switch (note.label) {
+        case 'low':
+          radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.low).distance/1000;
+          break;
+        case 'moderate':
+          radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.moderate).distance/1000;
+          break;
+        case 'high':
+          radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.high).distance/1000;
+          break;
+        default:
+          radius = 0; // Default radius if label doesn't match any case
+      }
+
+      double noteLatitude = note.latitude;
+      double noteLongitude = note.longitude;
       double userLatitude = _locationData.latitude ?? 0;
       double userLongitude = _locationData.longitude ?? 0;
 
       double distance = calculateDistance(noteLatitude, noteLongitude, userLatitude, userLongitude);
 
-      if (distance <= radius) {
-        _showNoteFoundNotification();
+      if (distance <= radius ) {
+        _showNoteFoundNotification(note);
         print("Note found near your location: ${note.title}");
         break;
       }
@@ -206,14 +225,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  void _showNoteFoundNotification() async {
+  void _showNoteFoundNotification(Note note) async {
     AwesomeNotifications awesomeNotifications = new AwesomeNotifications();
-    awesomeNotifications.createNotification(
+    int remainingTasks = note.taskList.where((task) => task != null && task.isCompleted == false).length;    awesomeNotifications.createNotification(
       content: NotificationContent(
         id: 0,
         channelKey: 'geofence_channel',
-        title: 'Note Found',
-        body: 'You are near a note!',
+        title: 'Note with title ${note.title} found',
+        body: 'You have ',
         notificationLayout: NotificationLayout.BigText,
       ),
     );

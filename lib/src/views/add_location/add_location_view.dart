@@ -118,24 +118,25 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   );
                   final noteProvider = Provider.of<NoteProvider>(context, listen: false);
-                  Note note = noteProvider.notes.firstWhere((note) => note.noteId == widget.NoteId);
-
-                  final settingsProvider = Provider.of<AppSettingsProvider>(context, listen: false);
-                  double radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == note.label).distance;
+                  // Note note = noteProvider.notes.firstWhere((note) => note.noteId == widget.NoteId);
+                  //
+                  // final settingsProvider = Provider.of<AppSettingsProvider>(context, listen: false);
+                  // double radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == note.label).distance;
                   // _circles.clear();
-                  _circles.add(
-                    Circle(
-                      circleId: CircleId(location.toString()),
-                      center: location,
-                      radius: radius,
-                      fillColor: Colors.blue.withOpacity(0.3),
-                      strokeColor: Colors.blue,
-                      strokeWidth: 1,
-                    ),
-                  );
+                  // _circles.add(
+                  //   Circle(
+                  //     circleId: CircleId(location.toString()),
+                  //     center: location,
+                  //     radius: radius,
+                  //     fillColor: Colors.blue.withOpacity(0.3),
+                  //     strokeColor: Colors.blue,
+                  //     strokeWidth: 1,
+                  //   ),
+                  // );
                 });
                 // Save the location
                 _saveLocation(location);
+
               },
             ),
     );
@@ -145,7 +146,6 @@ class _MapScreenState extends State<MapScreen> {
     String address = await _getAddress(location);
     print('Saving location: $location, $address'); // Debug log
     NoteUtils.updateNoteLocation(context, widget.NoteId, address, location);
-
 
     _markers.clear();
     _markers.add(

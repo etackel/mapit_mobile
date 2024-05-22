@@ -8,9 +8,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class NoteUtils {
   static String saveNote(BuildContext context, TextEditingController titleController, TextEditingController descriptionController, List<Task> tasks, Note? note, String address, LocationData locationData) {
-    print('calling save note');
     final noteProvider = Provider.of<NoteProvider>(context, listen: false);
-
+    print('NoteUtils.saveNote: ${locationData.latitude} ${locationData.longitude}');
 
     final newNote = Note(
       noteId: note?.noteId ?? DateTime.now().toString(),
@@ -19,7 +18,7 @@ class NoteUtils {
       taskList: tasks,
       latitude: locationData.latitude ?? 0.0,
       longitude: locationData.longitude ?? 0.0,
-      address: address ?? 'example address',
+      address: address ,
       label: note?.label ?? 'moderate',
       isPinned: note?.isPinned ?? false,
     );
@@ -44,15 +43,16 @@ class NoteUtils {
   }
 
   static Note _updateNoteProperties(Note existingNote, Note newNote) {
+    print('NoteUtils._updateNoteProperties: ${newNote.latitude} ${newNote.longitude}' );
     return Note(
       noteId: existingNote.noteId,
       title: newNote.title,
       description: newNote.description,
       taskList: newNote.taskList,
-      latitude: newNote.latitude,
-      longitude: newNote.longitude,
-      address: newNote.address,
-      label: newNote.label,
+      latitude: existingNote.latitude,
+      longitude: existingNote.longitude,
+      address: existingNote.address,
+      label: existingNote.label,
       isPinned: newNote?.isPinned ?? false,
     );
   }
@@ -66,10 +66,11 @@ class NoteUtils {
     final noteProvider = Provider.of<NoteProvider>(context, listen: false);
 
     final noteIndex = noteProvider.notes.indexWhere((note) => note.noteId == noteId);
-
+    print("THE DATAAAAAAAAAAAAAAA..............${locationData.latitude}");
+    print(locationData.longitude);
     if (noteIndex != -1) {
-      noteProvider.notes[noteIndex].latitude = locationData.latitude ?? 0.0;
-      noteProvider.notes[noteIndex].longitude = locationData.longitude ?? 0.0;
+      noteProvider.notes[noteIndex].latitude = locationData.latitude;
+      noteProvider.notes[noteIndex].longitude = locationData.longitude;
       print('location ${locationData.longitude}');
       noteProvider.notes[noteIndex].address = address;
       noteProvider.updateNote(noteIndex, noteProvider.notes[noteIndex]);

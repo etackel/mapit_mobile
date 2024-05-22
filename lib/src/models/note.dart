@@ -47,7 +47,7 @@ class Note {
       'taskList': taskList.map((task) => task.toJson()).toList(),
       'address': address,
       'label': label,
-      'isPinned': isPinned, // Include isPinned in JSON
+      'isPinned': isPinned,
     };
   }
 }

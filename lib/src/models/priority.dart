@@ -1,9 +1,9 @@
 
-enum Priority { Low, Medium, High }
+enum Priority { low, moderate, high }
 
 class PriorityDistance {
   final Priority priority;
-  final double distance;
+  late final double distance;
 
   PriorityDistance({required this.priority, required this.distance});
 }
