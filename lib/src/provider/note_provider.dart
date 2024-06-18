@@ -32,7 +32,6 @@ class NoteProvider extends ChangeNotifier {
   }
 
   void updateNote(int index, Note updatedNote) {
-    print('Note updated: ${updatedNote.title}');
     _notes[index] = updatedNote;
     _saveNotes();
     notifyListeners();
@@ -45,7 +44,6 @@ class NoteProvider extends ChangeNotifier {
   }
 
   void _saveNotes() async {
-    print('Saving notes in SharedPreferences');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String notesJson = jsonEncode(_notes.map((note) => note.toJson()).toList());
     await prefs.setString(_notesKey, notesJson);

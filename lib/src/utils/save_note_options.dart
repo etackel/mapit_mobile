@@ -21,6 +21,8 @@ class NoteUtils {
       address: address ,
       label: note?.label ?? 'moderate',
       isPinned: note?.isPinned ?? false,
+      reminderTime: note?.reminderTime ?? DateTime.now(),
+      isSilent: note?.isSilent ?? false,
     );
 
     final existingNoteIndex = noteProvider.notes.indexWhere((n) => n.noteId == newNote.noteId);
@@ -54,6 +56,8 @@ class NoteUtils {
       address: existingNote.address,
       label: existingNote.label,
       isPinned: newNote?.isPinned ?? false,
+      reminderTime: existingNote.reminderTime,
+      isSilent: newNote.isSilent,
     );
   }
 
@@ -66,8 +70,6 @@ class NoteUtils {
     final noteProvider = Provider.of<NoteProvider>(context, listen: false);
 
     final noteIndex = noteProvider.notes.indexWhere((note) => note.noteId == noteId);
-    print("THE DATAAAAAAAAAAAAAAA..............${locationData.latitude}");
-    print(locationData.longitude);
     if (noteIndex != -1) {
       noteProvider.notes[noteIndex].latitude = locationData.latitude;
       noteProvider.notes[noteIndex].longitude = locationData.longitude;

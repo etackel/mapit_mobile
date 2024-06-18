@@ -152,7 +152,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                     color: Colors.grey[300],
                   ),
                   child: const Icon(
-                    Icons.delete_forever_outlined,
+                    Icons.edit,
                     color: Color(0xFF156FEE),
                     size: 16,
                   ),

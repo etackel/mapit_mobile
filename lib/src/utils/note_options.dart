@@ -36,11 +36,43 @@ class ActionButtonUtils {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
-                leading: Icon(Icons.delete),
-                title: Text('Delete'),
+                leading: Icon(Icons.add_alarm_outlined),
+                title: Text('Time Reminder'),
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(DateTime.now().year + 5),
+                  );
+
+                  if (pickedDate != null) {
+                    TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+
+                    if (pickedTime != null) {
+                      DateTime finalDateTime = DateTime(
+                        pickedDate.year,
+                        pickedDate.month,
+                        pickedDate.day,
+                        pickedTime.hour,
+                        pickedTime.minute,
+                      );
+
+                      note.reminderTime = finalDateTime;
+                      noteProvider.updateNote(noteProvider.notes.indexWhere((n) => n.noteId == note.noteId), note);
+                    }
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(note.isSilent ? Icons.volume_off : Icons.volume_up),
+                title: Text('Silent'),
                 onTap: () {
-                  print('delete button clicked');
-                  noteProvider.deleteNoteAndNavigate(context,note.noteId);
+                  note.isSilent = !note.isSilent;
+                  noteProvider.updateNote(noteProvider.notes.indexWhere((n) => n.noteId == note.noteId), note);
                 },
               ),
             ],

@@ -14,6 +14,13 @@ import '../../models/note.dart';
 import '../create_note/create_note_view.dart';
 import 'dart:math' show asin, atan2, cos, pi, sin, sqrt;
 
+import 'map_page.dart';
+
+enum TabItem {
+  notes,
+  map,
+}
+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) {
     WidgetsFlutterBinding.ensureInitialized();
@@ -112,6 +119,14 @@ class _HomeScreenState extends State<HomeScreen> {
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
   late LocationData _locationData;
+  // ...
+  TabItem _currentTab = TabItem.notes;
+
+  void _selectTab(TabItem tabItem) {
+    setState(() {
+      _currentTab = tabItem;
+    });
+  }
 
   @override
   void initState() {
@@ -173,35 +188,41 @@ class _HomeScreenState extends State<HomeScreen> {
     final settingsProvider = Provider.of<AppSettingsProvider>(context, listen: false);
 
     for (Note note in notes) {
-      double radius;
-
-      // Get the label of the note and set the radius accordingly
-      switch (note.label) {
-        case 'low':
-          radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.low).distance/1000;
-          break;
-        case 'moderate':
-          radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.moderate).distance/1000;
-          break;
-        case 'high':
-          radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.high).distance/1000;
-          break;
-        default:
-          radius = 0; // Default radius if label doesn't match any case
+      if(note.isSilent){
+        return;
       }
+      else
+        {
+          double radius;
 
-      double noteLatitude = note.latitude;
-      double noteLongitude = note.longitude;
-      double userLatitude = _locationData.latitude ?? 0;
-      double userLongitude = _locationData.longitude ?? 0;
+          // Get the label of the note and set the radius accordingly
+          switch (note.label) {
+            case 'low':
+              radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.low).distance/1000;
+              break;
+            case 'moderate':
+              radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.moderate).distance/1000;
+              break;
+            case 'high':
+              radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.high).distance/1000;
+              break;
+            default:
+              radius = 0; // Default radius if label doesn't match any case
+          }
 
-      double distance = calculateDistance(noteLatitude, noteLongitude, userLatitude, userLongitude);
+          double noteLatitude = note.latitude;
+          double noteLongitude = note.longitude;
+          double userLatitude = _locationData.latitude ?? 0;
+          double userLongitude = _locationData.longitude ?? 0;
 
-      if (distance <= radius ) {
-        _showNoteFoundNotification(note);
-        print("Note found near your location: ${note.title}");
-        break;
-      }
+          double distance = calculateDistance(noteLatitude, noteLongitude, userLatitude, userLongitude);
+
+          if (distance <= radius ) {
+            _showNoteFoundNotification(note);
+            print("Note found near your location: ${note.title}");
+            break;
+          }
+        }
     }
   }
 
@@ -227,14 +248,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showNoteFoundNotification(Note note) async {
     AwesomeNotifications awesomeNotifications = new AwesomeNotifications();
-    int remainingTasks = note.taskList.where((task) => task != null && task.isCompleted == false).length;    awesomeNotifications.createNotification(
+    int remainingTasks = note.taskList.where((task) => task != null && task.isCompleted == false).length;
+    awesomeNotifications.createNotification(
       content: NotificationContent(
         id: 0,
         channelKey: 'geofence_channel',
         title: 'Note with title ${note.title} found',
-        body: 'You have ',
+        body: 'You have $remainingTasks tasks remaining',
         notificationLayout: NotificationLayout.BigText,
       ),
+      actionButtons: [
+        NotificationActionButton(
+          key: 'OPEN_NOTE',
+          label: 'Open Note',
+              ),
+      ],
     );
   }
 
@@ -250,7 +278,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: TopBar(scaffoldKey: _scaffoldKey),
-        body: Column(
+        body:
+        _currentTab == TabItem.notes ?
+        Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -334,9 +364,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
-          ),
+          ) : MapPage(),
         drawer: NavDrawer(),
         floatingActionButton: CustomFloatingActionButton(),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentTab.index,
+          onTap: (index) => _selectTab(TabItem.values[index]),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.note),
+              label: 'Notes',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map),
+              label: 'Map',
+            ),
+          ],
+        ),
       ),
     );
   }

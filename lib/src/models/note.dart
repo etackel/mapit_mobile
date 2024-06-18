@@ -10,6 +10,8 @@ class Note {
   String address;
   String? label;
   bool isPinned;
+  DateTime reminderTime;
+  bool isSilent;
 
   Note({
     required this.noteId,
@@ -21,6 +23,8 @@ class Note {
     required this.address,
     this.label,
     required this.isPinned ,
+    required this.reminderTime,
+    required this.isSilent,
   });
 
   factory Note.fromJson(Map<String, dynamic> json) {
@@ -34,6 +38,8 @@ class Note {
       address: json['address'],
       label: json['label'],
       isPinned: json['isPinned'] ?? false,
+      reminderTime: DateTime.parse(json['reminderTime']),
+      isSilent: json['isSilent'] ?? false,
     );
   }
 
@@ -48,6 +54,7 @@ class Note {
       'address': address,
       'label': label,
       'isPinned': isPinned,
+      'reminderTime': reminderTime.toIso8601String(),
     };
   }
 }

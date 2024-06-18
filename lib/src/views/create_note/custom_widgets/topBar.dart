@@ -15,7 +15,8 @@ class TopBar extends StatefulWidget implements PreferredSizeWidget {
   final String address;
   final LocationData locationData;
 
-  TopBar(this.titleController, this.descriptionController, this.tasks, this.note, this.address, this.locationData);
+  TopBar(this.titleController, this.descriptionController, this.tasks,
+      this.note, this.address, this.locationData);
 
   @override
   _TopBarState createState() => _TopBarState();
@@ -37,13 +38,20 @@ class _TopBarState extends State<TopBar> {
           IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
-              ActionButtonUtils.backButtonAction(context, widget.titleController, widget.descriptionController, widget.tasks, widget.note, widget.address, widget.locationData);
+              ActionButtonUtils.backButtonAction(
+                  context,
+                  widget.titleController,
+                  widget.descriptionController,
+                  widget.tasks,
+                  widget.note,
+                  widget.address,
+                  widget.locationData);
             },
           ),
           Expanded(
             child: Container(
               height: 25,
-              color: Colors.white, 
+              color: Colors.white,
             ),
           ),
           Row(
@@ -51,7 +59,10 @@ class _TopBarState extends State<TopBar> {
               IconButton(
                 icon: Icon(Icons.share),
                 onPressed: () {
-                  final noteContent = _buildNoteContent(widget.titleController.text, widget.descriptionController.text, widget.tasks);
+                  final noteContent = _buildNoteContent(
+                      widget.titleController.text,
+                      widget.descriptionController.text,
+                      widget.tasks);
                   ActionButtonUtils.shareButtonAction(noteContent);
                 },
               ),
@@ -62,7 +73,8 @@ class _TopBarState extends State<TopBar> {
                     : Icon(Icons.push_pin_outlined),
                 onPressed: () {
                   if (widget.note != null) {
-                    ActionButtonUtils.pinButtonAction(widget.note!, context.read<NoteProvider>());
+                    ActionButtonUtils.pinButtonAction(
+                        widget.note!, context.read<NoteProvider>());
                     setState(() {});
                   }
                 },
@@ -71,8 +83,11 @@ class _TopBarState extends State<TopBar> {
               IconButton(
                 icon: Icon(Icons.more_vert),
                 onPressed: () {
-                  print('more_vert clicked');
-                  context.read<NoteProvider>().deleteNoteById(widget.note!.noteId);
+                  if (widget.note != null) {
+                    ActionButtonUtils.showOptions(
+                        context, context.read<NoteProvider>(), widget.note!);
+                    setState(() {});
+                  }
                 },
               ),
             ],
