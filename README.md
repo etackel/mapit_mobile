@@ -1,16 +1,24 @@
-# mapit
+# MapIt
 
-Location based note taking.
+MapIt is a Flutter-based application designed to provide users with note-taking functionality that includes location tagging. Users can create, pin, delete notes, and also mark their locations using Google Maps. The app features seamless Google Sign-In integration for user authentication.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- **Google Sign-In Authentication**: Secure and easy authentication using Google accounts.
+- **Note Creation**: Create and manage notes with titles, descriptions, and tasks.
+- **Location Tagging**: Tag notes with the current location using Google Maps.
+- **Pin/Unpin Notes**: Swipe right to pin/unpin notes.
+- **Delete Notes**: Swipe left to delete notes.
+- **View Notes**: All pinned notes are displayed at the top, followed by unpinned notes.
+- **Map Integration**: Search for locations using autocomplete and select locations on the map.
 
-A few resources to get you started if this is your first Flutter project:
+## Acknowledgements
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- [Flutter](https://flutter.dev/)
+- [Firebase Authentication](https://firebase.google.com/docs/auth)
+- [Google Maps for Flutter](https://pub.dev/packages/google_maps_flutter)
+- [Location](https://pub.dev/packages/location)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Contact
+
+Created by [Abhinav Sharma](https://github.com/abhinavs1920) - feel free to contact me!
