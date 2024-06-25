@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mapit/src/views/home/home_view.dart';
 import 'package:mapit/src/widgets/google_auth_button.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +24,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> checkCurrentUser() async {
     final User? user = await SignInService.getCurrentUser();
     if (user != null) {
-      // User is already signed in, navigate to HomeScreen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -34,9 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
+
     await SignInService.signInWithGoogle(context);
 
-    // Get user details after sign-in
     final User? user = await SignInService.getCurrentUser();
     if (user != null) {
       Navigator.pushReplacement(

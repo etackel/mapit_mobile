@@ -59,6 +59,11 @@ dependencies:
   flutter_typeahead: ^5.2.0
   flutter_launcher_icons: ^0.13.1
   quick_actions: ^1.0.7
+  loading_animation_widget: ^1.2.1
+  dotenv: ^4.2.0
+  isolate: ^2.1.1
+  dio: ^5.4.3+1
+  flutter_dotenv: ^5.1.0
 #  background_location: ^0.13.0
 
 

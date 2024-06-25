@@ -1,113 +1,22 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
 import 'package:provider/provider.dart';
-import 'package:workmanager/workmanager.dart';
-import '../../models/priority.dart';
-import '../../provider/note_provider.dart';
-import '../../provider/settings_provider.dart';
+import '../../models/note.dart';
+import '../../services/location_service.dart';
+import '../../services/notification_service.dart';
 import 'custom_widgets/navBar.dart';
 import 'custom_widgets/note_card.dart';
 import 'custom_widgets/fab.dart';
 import 'custom_widgets/topBarWidget.dart';
-import '../../models/note.dart';
 import '../create_note/create_note_view.dart';
-import 'dart:math' show asin, atan2, cos, pi, sin, sqrt;
-
 import 'map_page.dart';
+import '../../provider/note_provider.dart';
+import '../../provider/settings_provider.dart';
+
 
 enum TabItem {
   notes,
   map,
 }
-
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) {
-    WidgetsFlutterBinding.ensureInitialized();
-    Workmanager().initialize(callbackDispatcher);
-    if (task == "locationUpdates") {
-      List<Note> notes = _retrieveNotes();
-      _updateLocationInBackground(notes);
-    } else {
-      print("Unknown task: $task");
-    }
-    return Future.value(true);
-  });
-}
-
-List<Note> _retrieveNotes() {
-  NoteProvider noteProvider = NoteProvider();
-  List<Note> notes = noteProvider.notes;
-  return notes;
-}
-
-void _updateLocationInBackground(List<Note> notes) {
-  Location().getLocation().then((LocationData locationData) {
-    print("Location updated in background: $locationData");
-    _checkGeofenceInBackground(locationData, notes);
-  }).catchError((error) {
-    print("Error updating location in background: $error");
-  });
-}
-
-void _checkGeofenceInBackground(LocationData locationData, List<Note> notes) {
-  print("Checking geofence in background");
-  for (Note note in notes) {
-    int noteLatitudeInt = note.latitude?.toInt() ?? 0;
-    int noteLongitudeInt = note.longitude?.toInt() ?? 0;
-
-    int userLatitudeInt = locationData.latitude?.toInt() ?? 0;
-    int userLongitudeInt = locationData.longitude?.toInt() ?? 0;
-
-    if (userLatitudeInt == noteLatitudeInt &&
-        userLongitudeInt == noteLongitudeInt) {
-      _showNoteFoundNotification();
-      print("Note found near your location: ${note.title}");
-      break;
-    }
-  }
-}
-
-void _showNoteFoundNotification() async {
-  AwesomeNotifications awesomeNotifications = new AwesomeNotifications();
-  awesomeNotifications.createNotification(
-    content: NotificationContent(
-      id: 0,
-      channelKey: 'geofence_channel',
-      title: 'Note Found',
-      body: 'You are near a note!',
-      notificationLayout: NotificationLayout.BigText,
-    ),
-  );
-}
-
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  Workmanager().initialize(callbackDispatcher);
-  Workmanager().registerPeriodicTask(
-    '1',
-    'locationUpdates',
-    frequency: Duration(seconds: 3),
-  );
-  AwesomeNotifications().initialize(
-    null,
-    [
-      NotificationChannel(
-        channelKey: 'geofence_channel',
-        channelName: 'Geofence Channel',
-        channelDescription: 'Channel for geofence notifications',
-        defaultColor: Colors.green,
-        ledColor: Colors.green,
-        playSound: true,
-        enableVibration: true,
-      ),
-    ],
-  );
-
-  runApp(HomeScreen());
-}
-
-final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -115,11 +24,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Location location;
-  late bool _serviceEnabled;
-  late PermissionStatus _permissionGranted;
-  late LocationData _locationData;
-  // ...
+  late LocationService locationService;
+  late NotificationService notificationService;
   TabItem _currentTab = TabItem.notes;
 
   void _selectTab(TabItem tabItem) {
@@ -131,142 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    location = Location();
-    _checkLocationPermission();
-    _configureNotificationOptions();
-    _startLocationUpdates();
+    locationService = LocationService(context: context);
+    notificationService = NotificationService();
+    locationService.checkLocationPermission();
+    locationService.configureNotificationOptions();
+    locationService.startLocationUpdates();
   }
 
-  Future<void> _checkLocationPermission() async {
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return;
-      }
-    }
-
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-
-    _locationData = await location.getLocation();
-  }
-
-  void _configureNotificationOptions() {
-    location.changeNotificationOptions(
-      title: 'Geolocation',
-      subtitle: 'Geolocation detection',
-    );
-  }
-
-  void _startLocationUpdates() {
-    Workmanager().registerPeriodicTask(
-      'locationUpdates',
-      'locationUpdatesTask',
-      frequency: Duration(minutes: 15),
-    );
-
-    location.onLocationChanged.listen((LocationData currentLocation) {
-      setState(() {
-        _locationData = currentLocation;
-        NoteProvider noteProvider =
-            Provider.of<NoteProvider>(context, listen: false);
-        List<Note> notes = noteProvider.notes;
-        checkGeofence(notes);
-        print("Location updated: $_locationData");
-      });
-    });
-  }
-
-  void checkGeofence(List<Note> notes) {
-    // Get the settings provider
-    final settingsProvider = Provider.of<AppSettingsProvider>(context, listen: false);
-
-    for (Note note in notes) {
-      if(note.isSilent){
-        return;
-      }
-      else
-        {
-          double radius;
-
-          // Get the label of the note and set the radius accordingly
-          switch (note.label) {
-            case 'low':
-              radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.low).distance/1000;
-              break;
-            case 'moderate':
-              radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.moderate).distance/1000;
-              break;
-            case 'high':
-              radius = settingsProvider.priorityDistances.firstWhere((pd) => pd.priority == Priority.high).distance/1000;
-              break;
-            default:
-              radius = 0; // Default radius if label doesn't match any case
-          }
-
-          double noteLatitude = note.latitude;
-          double noteLongitude = note.longitude;
-          double userLatitude = _locationData.latitude ?? 0;
-          double userLongitude = _locationData.longitude ?? 0;
-
-          double distance = calculateDistance(noteLatitude, noteLongitude, userLatitude, userLongitude);
-
-          if (distance <= radius ) {
-            _showNoteFoundNotification(note);
-            print("Note found near your location: ${note.title}");
-            break;
-          }
-        }
-    }
-  }
-
-  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const int R = 6371; // Radius of the Earth in kilometers
-    double dLat = _degreesToRadians(lat2 - lat1);
-    double dLon = _degreesToRadians(lon2 - lon1);
-
-    lat1 = _degreesToRadians(lat1);
-    lat2 = _degreesToRadians(lat2);
-
-    double a = sin(dLat/2) * sin(dLat/2) +
-        sin(dLon/2) * sin(dLon/2) * cos(lat1) * cos(lat2);
-    double c = 2 * atan2(sqrt(a), sqrt(1-a));
-
-    return R * c; // Distance in kilometers
-  }
-
-  double _degreesToRadians(double degrees) {
-    return degrees * pi / 180;
-  }
-
-
-  void _showNoteFoundNotification(Note note) async {
-    AwesomeNotifications awesomeNotifications = new AwesomeNotifications();
-    int remainingTasks = note.taskList.where((task) => task != null && task.isCompleted == false).length;
-    awesomeNotifications.createNotification(
-      content: NotificationContent(
-        id: 0,
-        channelKey: 'geofence_channel',
-        title: 'Note with title ${note.title} found',
-        body: 'You have $remainingTasks tasks remaining',
-        notificationLayout: NotificationLayout.BigText,
-      ),
-      actionButtons: [
-        NotificationActionButton(
-          key: 'OPEN_NOTE',
-          label: 'Open Note',
-              ),
-      ],
-    );
-  }
-
-  @override
   @override
   Widget build(BuildContext context) {
     final noteProvider = Provider.of<NoteProvider>(context, listen: false);
@@ -276,114 +53,40 @@ class _HomeScreenState extends State<HomeScreen> {
       top: true,
       bottom: true,
       child: Scaffold(
-        key: _scaffoldKey,
-        appBar: TopBar(scaffoldKey: _scaffoldKey),
-        body:
-        _currentTab == TabItem.notes ?
-        Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Consumer<NoteProvider>(
-                  builder: (context, noteProvider, child) {
-                    return ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: dummyNoteList.length,
-                      itemBuilder: (context, index) {
-                        final Note note = dummyNoteList[index];
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Dismissible(
-                              key: UniqueKey(),
-                              direction: DismissDirection.horizontal,
-                              background: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10), // Rounded rectangles
-                                  color: Colors.green.withOpacity(0.8), // Color for pinning with opacity
-                                ),
-                                alignment: Alignment.centerLeft,
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.push_pin, color: Colors.white),
-                                    SizedBox(width: 10),
-                                    Text('Pin', style: TextStyle(color: Colors.white)),
-                                  ],
-                                ),
-                              ),
-                              secondaryBackground: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10), // Rounded rectangles
-                                  color: Colors.red.withOpacity(0.8), // Color for deleting with opacity
-                                ),
-                                alignment: Alignment.centerRight,
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Text('Delete', style: TextStyle(color: Colors.white)),
-                                    SizedBox(width: 10),
-                                    Icon(Icons.delete, color: Colors.white),
-                                  ],
-                                ),
-                              ),
-                              onDismissed: (direction) {
-                                if (direction == DismissDirection.endToStart) {
-                                  // Delete note if swiped from right to left
-                                  noteProvider.deleteNote(index);
-                                } else if (direction == DismissDirection.startToEnd) {
-                                  // Toggle pin status if swiped from left to right
-                                  note.isPinned = !note.isPinned;
-                                  noteProvider.updateNote(noteProvider.notes.indexWhere((n) => n.noteId == note.noteId), note);
-                                }
-                              },
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CreateNoteScreen(
-                                        note: note,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: NoteTile(
-                                  note: note,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 8,),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ) : MapPage(),
+        key: locationService.scaffoldKey,
+        appBar: TopBar(scaffoldKey: locationService.scaffoldKey),
+        body: _currentTab == TabItem.notes ? buildNotesList(dummyNoteList) : MapPage(),
         drawer: NavDrawer(),
         floatingActionButton: CustomFloatingActionButton(),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentTab.index,
-          onTap: (index) => _selectTab(TabItem.values[index]),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.note),
-              label: 'Notes',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Map',
-            ),
-          ],
-        ),
+        bottomNavigationBar: buildBottomNavigationBar(),
       ),
     );
   }
 
+  ListView buildNotesList(List<Note> dummyNoteList) {
+    return ListView.builder(
+      itemCount: dummyNoteList.length,
+      itemBuilder: (context, index) {
+        final Note note = dummyNoteList[index];
+        return NoteTile(note: note);
+      },
+    );
+  }
 
+  BottomNavigationBar buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      currentIndex: _currentTab.index,
+      onTap: (index) => _selectTab(TabItem.values[index]),
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.note),
+          label: 'Notes',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.map),
+          label: 'Map',
+        ),
+      ],
+    );
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -51,8 +52,9 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<List<String>> _getSuggestions(String query) async {
+    DotEnv env = DotEnv();
     print('Getting suggestions for: $query'); // Debug log
-    const String apiKey = 'AIzaSyCQdbg4xwYyU878Dwd55qAi_XDw4_fec58';
+    String? apiKey = env.env['GOOGLE_MAPS_API_KEY'];
     final String url =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=$apiKey';
     final response = await http.get(Uri.parse(url));
