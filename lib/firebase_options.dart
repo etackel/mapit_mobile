@@ -63,6 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '455325735038',
     projectId: 'mapit-etackel',
     storageBucket: 'mapit-etackel.appspot.com',
+    androidClientId: '455325735038-thd43ldnta97i8hg8o7krgpqsub77t7i.apps.googleusercontent.com',
     iosClientId: '455325735038-qgfjdajdgd7re9ou0b673mi1ajkki9t1.apps.googleusercontent.com',
     iosBundleId: 'com.etackel.mapit',
   );

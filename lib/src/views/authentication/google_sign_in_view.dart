@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mapit/src/views/home/home_view.dart';
 import 'package:mapit/src/widgets/google_auth_button.dart';
 import 'package:provider/provider.dart';

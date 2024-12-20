@@ -8,7 +8,6 @@ import 'package:mapit/src/utils/save_note_options.dart';
 import 'dart:convert';
 import 'package:mapit/src/models/note.dart';
 import 'package:provider/provider.dart';
-import '../../provider/settings_provider.dart';
 import '../../provider/note_provider.dart';
 
 Set<Marker> _markers = {};
