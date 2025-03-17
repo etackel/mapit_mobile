@@ -83,14 +83,24 @@ class NoteUtils {
     }
   }
 
-  static void updateNoteLocation(BuildContext context, String noteId, String address, LatLng locationData) {
-    _updateNoteField(context, noteId, (note) {
-      note.latitude = locationData.latitude;
-      note.longitude = locationData.longitude;
-      note.address = address;
-      _logger.i('Note location updated: ${note.title}');
-    });
+  static void updateNoteLocation(BuildContext context, String noteId, String? address, LatLng? locationData) {
+  if (noteId.isEmpty) {
+    _logger.e('Invalid noteId provided');
+    return;
   }
+
+  if (locationData == null) {
+    _logger.e('Location data is null');
+    return;
+  }
+
+  _updateNoteField(context, noteId, (note) {
+    note.latitude = locationData.latitude;
+    note.longitude = locationData.longitude;
+    note.address = address ?? note.address;
+    _logger.i('Note location updated: ${note.title}');
+  });
+}
 
   static void updateNotePriority(BuildContext context, String noteId, int priorityLevel) {
     _updateNoteField(context, noteId, (note) {

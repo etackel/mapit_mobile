@@ -5,9 +5,9 @@ class Note {
   final String title;
   final String description;
   final List<Task> taskList;
-  final double latitude;
-  final double longitude;
-  final String address;
+  double latitude;
+  double longitude;
+  String address;
   String? label;
   bool isPinned;
   DateTime reminderTime;
