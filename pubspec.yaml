@@ -34,37 +34,56 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
-  google_sign_in: ^6.2.1
-  firebase_core: ^2.25.3
-  anim_search_bar: ^2.0.3
-  provider: ^6.1.1
-  location: ^5.0.3
-  firebase_auth: ^4.17.4
-  geocoding: ^2.1.1
-  fluttertoast: ^8.2.4
-  workmanager: ^0.5.2
-  awesome_notifications: ^0.9.2
-  share_plus: ^7.2.2
-  sign_in_button: ^3.2.0
-  shared_preferences: ^2.2.3
-  flutter_background_service: ^5.0.5
-  device_info_plus: ^9.1.2
-  flutter_background_service_android: ^6.2.2
-  google_maps_flutter: ^2.5.3
-  geolocator: ^11.0.0
-  baseflow_plugin_template: ^2.1.2
-  latlong2: ^0.9.1
-  google_maps_webservice: ^0.0.20-nullsafety.5
-  flutter_typeahead: ^5.2.0
-  flutter_launcher_icons: ^0.13.1
-  quick_actions: ^1.0.7
-  loading_animation_widget: ^1.2.1
-  dotenv: ^4.2.0
-  isolate: ^2.1.1
-  dio: ^5.4.3+1
-  flutter_dotenv: ^5.1.0
-  logger: ^2.5.0
+  # Core Flutter and UI dependencies
+cupertino_icons: ^1.0.2
+provider: ^6.1.1
+loading_animation_widget: ^1.2.1
+
+# Authentication and User Management
+google_sign_in: ^6.2.1
+firebase_core: ^2.25.3
+firebase_auth: ^4.17.4
+sign_in_button: ^3.2.0
+
+# Location and Maps
+location: ^5.0.3
+google_maps_flutter: ^2.5.3
+geolocator: ^11.0.0
+latlong2: ^0.9.1
+google_maps_webservice: ^0.0.20-nullsafety.5
+
+# Notifications and Background Services
+awesome_notifications: ^0.10.1
+flutter_background_service: ^5.0.5
+flutter_background_service_android: ^6.2.2
+workmanager: ^0.5.2
+
+# Data Management and Storage
+shared_preferences: ^2.2.3
+dio: ^5.4.3+1
+flutter_dotenv: ^5.1.0
+dotenv: ^4.2.0
+
+# UI Components and Widgets
+anim_search_bar: ^2.0.3
+flutter_typeahead: ^5.2.0
+flutter_launcher_icons: ^0.13.1
+quick_actions: ^1.0.7
+
+# Utility and Logging
+fluttertoast: ^8.2.4
+logger: ^2.5.0
+isolate: ^2.1.1
+
+# Device Information
+device_info_plus: ^9.1.2
+baseflow_plugin_template: ^2.1.2
+
+# Geocoding and Address Management
+geocoding: ^2.1.1
+
+# File Sharing
+share_plus: ^7.2.2
 #  background_location: ^0.13.0
 
 

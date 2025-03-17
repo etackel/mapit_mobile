@@ -4,8 +4,8 @@ import '../../domain/entities/note.dart';
 
 class NotificationService {
   void showNoteFoundNotification(Note note) async {
-    AwesomeNotifications awesomeNotifications = new AwesomeNotifications();
-    int remainingTasks = note.taskList.where((task) => task != null && task.isCompleted == false).length;
+    AwesomeNotifications awesomeNotifications = AwesomeNotifications();
+    int remainingTasks = note.taskList.where((task) => task.isCompleted == false).length;
     awesomeNotifications.createNotification(
       content: NotificationContent(
         id: 0,
