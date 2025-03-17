@@ -2,27 +2,22 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
-import 'dart:async';
-import 'dart:isolate';
-import 'dart:ui';
-
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
-import 'package:mapit/src/provider/note_provider.dart';
-import 'package:mapit/src/provider/settings_provider.dart';
-import 'package:mapit/src/provider/user_provider.dart';
-import 'package:mapit/src/views/authentication/google_sign_in_view.dart';
-import 'package:mapit/src/views/create_note/create_note_view.dart';
-import 'package:mapit/src/views/home/home_view.dart';
+
 import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+import 'src/presentation/pages/authentication/google_sign_in_view.dart';
+import 'src/presentation/pages/create_note/create_note_view.dart';
+import 'src/presentation/providers/note_provider.dart';
+import 'src/presentation/providers/settings_provider.dart';
+import 'src/presentation/providers/user_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
