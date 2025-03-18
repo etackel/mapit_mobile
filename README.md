@@ -1,47 +1,87 @@
 # MapIt
 
-MapIt is a Flutter-based application designed to provide users with note-taking functionality that includes location tagging. Users can create, pin, delete notes, and also mark their locations using Google Maps. The app features seamless Google Sign-In integration for user authentication.
+**MapIt** is a Flutter-based application designed to provide users with note-taking functionality that includes **location tagging**. Users can create, pin, delete notes, and mark their locations using **Google Maps**. The app features **seamless Google Sign-In integration** for user authentication.
 
-## Features
+---
+
+## ✨ Features
 
 - **Google Sign-In Authentication**: Secure and easy authentication using Google accounts.
 - **Note Creation**: Create and manage notes with titles, descriptions, and tasks.
-- **Location Tagging**: Tag notes with the current location using Google Maps.
+- **Location Tagging**: Tag notes with the current location using **Google Maps**.
 - **Pin/Unpin Notes**: Swipe right to pin/unpin notes.
 - **Delete Notes**: Swipe left to delete notes.
 - **View Notes**: All pinned notes are displayed at the top, followed by unpinned notes.
 - **Map Integration**: Search for locations using autocomplete and select locations on the map.
+- **Set Reminders**: Schedule reminders for notes to receive notifications at a specified time.
 
-## Usage
+---
 
-### Authentication
+## 🛠 Tech Stack
 
-MapIt uses Google Sign-In for authentication. When the app starts, it checks if the user is already signed in. If not, the user is presented with a Google Sign-In button.
+MapIt is built using **Flutter** with the following technologies:
 
-### Notes Management
+- **Flutter & Dart**: The core framework for UI and functionality.
+- **Firebase Authentication**: Secure authentication using Google Sign-In.
+- **Google Maps for Flutter**: For location tagging and map integration.
+- **Location Package**: To fetch the user's current location.
+- **flutter_local_notifications**: For scheduling reminders and notifications.
+- **Isolates**: For handling background tasks efficiently.
+- **Geofencing**: To trigger location-based reminders.
+- **Background Notification Service**: Ensures notifications even when the app is closed.
+- **Battery Optimization**: Keeps background services efficient without excessive battery drain.
 
-- **Create Note**: Click on the 'Add Note' button to create a new note. Fill in the title, description, and tasks.
-- **Pin/Unpin Note**: Swipe right on a note to pin or unpin it. Pinned notes are displayed at the top.
+---
+
+## 🚀 Usage
+
+### 🔐 Authentication
+MapIt uses **Google Sign-In** for authentication. When the app starts, it checks if the user is already signed in. If not, the user is presented with a Google Sign-In button.
+
+### 📝 Notes Management
+- **Create Note**: Tap the **'Add Note'** button to create a new note. Fill in the title, description, and tasks.
+- **Pin/Unpin Note**: Swipe right on a note to pin/unpin it. Pinned notes appear at the top.
 - **Delete Note**: Swipe left on a note to delete it.
-- **Tag Location**: Click on the location button to open the map, search for a location, and tag it to the note.
-- **Set Reminder**: When creating or editing a note, you can set a reminder to receive a notification at a specified time.
+- **Tag Location**: Click on the **location button** to open the map, search for a location, and tag it to the note.
+- **Set Reminder**: When creating or editing a note, set a date and time to receive a notification.
 
-### Location Tagging
+### 📍 Location Tagging
+The app uses **google_maps_flutter** and **location** packages to:
+- Get the current location.
+- Display a map for tagging locations.
+- Enable **autocomplete search** for selecting locations.
 
-The app uses the `google_maps_flutter` and `location` packages to get the current location and display the map. Users can search for a location using the autocomplete feature and select it.
+### ⏰ Reminder Feature
+The **flutter_local_notifications** package schedules notifications. When a reminder is set, the app will notify the user at the specified time.
 
-### Reminder Feature
+---
 
-The reminder feature uses the `flutter_local_notifications` package to schedule notifications. When creating or editing a note, you can set a date and time for a reminder. The app will then notify you at the specified time to remind you about the note.
+## 🛤 Roadmap
 
+### 🔜 Planned Features
+Here are some features that will be added in future updates:
 
-## Acknowledgements
+1. **Offline Mode** - Allow users to access and modify notes without an internet connection.
+2. **Geofencing Alerts** - Get reminders based on location (e.g., "Remind me when I reach home").
+3. **Voice-to-Text Notes** - Convert speech into text for faster note-taking.
+4. **Dark Mode** - Support for light and dark themes.
+5. **Collaborative Notes** - Share and edit notes with others in real-time.
+6. **Cloud Backup & Sync** - Automatic backup and sync across multiple devices.
+7. **Custom Categories & Tags** - Organize notes better using categories and labels.
+8. **Widgets & Quick Actions** - Home screen widgets for quick access to pinned notes.
 
-- [Flutter](https://flutter.dev/)
-- [Firebase Authentication](https://firebase.google.com/docs/auth)
-- [Google Maps for Flutter](https://pub.dev/packages/google_maps_flutter)
-- [Location](https://pub.dev/packages/location)
+---
 
-## Contact
+## 🎗 Acknowledgements
 
-Created by [Abhinav Sharma](https://github.com/abhinavs1920) - feel free to contact me!
+- **Flutter** - Open-source UI framework.
+- **Firebase Authentication** - Secure sign-in integration.
+- **Google Maps for Flutter** - Used for map functionalities.
+- **Location Package** - Fetches the current user location.
+- **flutter_local_notifications** - Enables scheduling notifications.
+
+---
+
+## 📩 Contact
+
+Created by **Abhinav Sharma** – Feel free to reach out for any queries or collaboration!
